@@ -64,6 +64,21 @@
         "KeyPairName":{
           "Type": "AWS::EC2::KeyPair::KeyName",
           "Description": "Name of existing EC2 KeyPair to enable SSH access to the ECS instances."
+        },
+        "DesiredCapacity": {
+          "Type": "Number",
+          "Default": "1",
+          "Description": "Number of instances to launch in your ECS cluster."
+        },
+        "MinSize": {
+          "Type": "Number",
+          "Default": "1",
+          "Description": "Minimum number of instances to launch in your ECS cluster."
+        },
+        "MaxSize": {
+          "Type": "Number",
+          "Default": "1",
+          "Description": "Maximum number of instances to launch in your ECS cluster."
         }
     },
     "Mappings": {
@@ -455,9 +470,56 @@
               }
             }
           }
+        },
+        "WebAutoScalingGroup": {
+          "Type": "AWS::AutoScaling::AutoScalingGroup",
+          "Properties":{
+            "LaunchConfigurationName": {
+              "Ref": "WebLaunchConfig"
+            },
+            "DesiredCapacity": {
+              "Ref": "DesiredCapacity"
+            },
+            "MinSize": {
+              "Ref": "MinSize"
+            },
+            "MaxSize": {
+              "Ref": "MaxSize"
+            },
+            "VPCZoneIdentifier": {
+              "Ref": "SubnetIDs"
+            },
+            "Tags":[
+              {
+                "Key":"Name",
+                "Value":{
+                  "Fn::Join":[
+                    "-",
+                    [
+                      {"Ref": "WebCluster"},
+                      "Instance"
+                    ]
+                  ]
+                },
+                "PropagateAtLaunch": true
+              }
+            ]
+          },
+          "CreationPolicy": {
+            "ResourceSignal": {
+              "Count": {
+                "Ref": "DesiredCapacity"
+              },
+              "Timeout": "PT15M"
+            }
+          },
+          "UpdatePolicy": {
+            "AutoScalingRelacingUpdate":{
+              "WillReplace": "true"
+            }
+          }
         }
       },
-    
      "Outputs": {
         "EcsCluster": {
             "Description": "The name of our newly created cluster",
