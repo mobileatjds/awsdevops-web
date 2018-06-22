@@ -17,4 +17,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# My stuff
 README.md.original
+latest-ecs-ami.sh
+latestami.txt
